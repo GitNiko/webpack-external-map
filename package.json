@@ -4,7 +4,8 @@
   "description": "a map of external configure",
   "main": "index.js",
   "scripts": {
-    "test": "node test/index.js"
+    "test": "node test/index.js",
+    "dev": "node ./editor/server.js"
   },
   "repository": {
     "type": "git",
@@ -26,11 +27,16 @@
     "eslint-config-prettier": "^3.1.0",
     "eslint-plugin-node": "^7.0.1",
     "eslint-plugin-prettier": "^3.0.0",
+    "html-webpack-plugin": "^4.0.0-beta.2",
+    "koa": "^2.6.1",
+    "koa-router": "^7.4.0",
+    "next": "^7.0.2",
     "prettier": "^1.14.3",
     "puppeteer-core": "^1.9.0",
     "read-package-tree": "^5.2.1",
     "semver": "^5.6.0",
     "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.1.9"
   },
   "peerDependencies": {
@@ -38,5 +44,10 @@
   },
   "engines": {
     "node": ">=8.0.0"
+  },
+  "dependencies": {
+    "@reach/router": "^1.2.1",
+    "react": "^16.6.0",
+    "react-dom": "^16.6.0"
   }
 }
