@@ -1,7 +1,6 @@
 # webpack-external-map
 
 ## 需求
-antd 2.2.3 => db => 
 
 ## 方案
 
@@ -90,10 +89,4 @@ antd 2.2.3 => db =>
 // => 生成对应script tag
 
 ```
-### 测试
-通过`html-webpack-plugin`生成html，通过`Puppeteer`加载html后确认window上的库是否加载进来。
-
-
-### trouble
-- 依赖顺序
-- i18n加载区分
+## 注意点

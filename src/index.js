@@ -1,4 +1,4 @@
-const db = require('./external.json')
+const db = require('../storage/external.json')
 const semver = require('semver')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 

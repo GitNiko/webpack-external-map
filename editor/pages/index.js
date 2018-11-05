@@ -7,6 +7,12 @@ const { Header, Footer, Content } = Layout
 const Search = Input.Search
 
 export default class Home extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      versions:[]
+    }
+  }
   componentDidMount() {
     getExternMapJson().then((result) => {
       console.log(result)

@@ -43,4 +43,8 @@ module.exports = {
   getPackageInfo: (package = 'rct-form') => {
     return fetch(`${Registry}/${package}`).then(r => r.json())
   },
+  // todo:提交整个包的external信息
+  commit: (packageBlock) => {
+    
+  }
 }
