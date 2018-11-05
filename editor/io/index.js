@@ -25,6 +25,8 @@ class Workspace {
   }
 
   async save(content) {
+    // fetch before change
+    this.repo.fetch('origin')
     fs.writeFileSync(FullFilePath, content, 'utf-8')
     const index = await this.repo.refreshIndex()
     await index.addByPath(FilePath)
