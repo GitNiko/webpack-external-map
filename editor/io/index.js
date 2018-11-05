@@ -21,12 +21,15 @@ class Workspace {
       // exist and fetch
       this.repo = await Git.Repository.open(RepoDir)
       await this.repo.fetch('origin')
+      await this.repo.mergeBranches('master', 'origin/master')
     }
   }
 
   async save(content) {
     // fetch before change
-    this.repo.fetch('origin')
+    await this.repo.fetch('origin')
+    await this.repo.mergeBranches('master', 'origin/master')
+
     fs.writeFileSync(FullFilePath, content, 'utf-8')
     const index = await this.repo.refreshIndex()
     await index.addByPath(FilePath)
