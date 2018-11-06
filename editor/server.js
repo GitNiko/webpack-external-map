@@ -2,6 +2,7 @@ require('dotenv').config()
 const Koa = require('koa')
 const next = require('next')
 const Router = require('koa-router')
+const koaBody = require('koa-body')
 const proxy = require('./middlewares/proxy')
 const { Workspace } = require('./io/index')
 
@@ -18,6 +19,7 @@ app.prepare().then(() => {
   const router = new Router()
 
   server.use(proxy)
+  server.use(koaBody())
   // router.get('/a', async ctx => {
   //   await app.render(ctx.req, ctx.res, '/b', ctx.query)
   //   ctx.respond = false
@@ -28,9 +30,28 @@ app.prepare().then(() => {
   //   ctx.respond = false
   // })
 
-  router.get('/api/mapping', async ctx => {})
+  router.get('/api/mapping', async ctx => {
+    try {
+      const mapping = await workspace.getMapping()
+      ctx.status = 200
+      ctx.body = mapping
+    } catch (e) {
+      ctx.status = 500
+      ctx.body = e.message
+    }
+  })
 
-  router.post('/api/commit', async ctx => {})
+  router.post('/api/mapping', async ctx => {
+    try {
+      const mapping = ctx.request.body
+      await workspace.save(mapping)
+      ctx.status = 200
+      ctx.body = true
+    } catch (e) {
+      ctx.status = 500
+      ctx.body = e.message
+    }
+  })
 
   router.get('*', async ctx => {
     await handle(ctx.req, ctx.res)
