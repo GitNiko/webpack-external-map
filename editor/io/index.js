@@ -10,6 +10,7 @@ const FullFilePath = `${RepoDir}/${FilePath}`
 
 class Workspace {
   async init(url, option) {
+    this.repoUrl = url
     if (option && option.workspaceDir) {
       workspaceDir = option.workspaceDir
     }
@@ -35,8 +36,8 @@ class Workspace {
     await index.addByPath(FilePath)
     await index.write()
     const oid = await index.writeTree()
-    const head = Git.Reference.nameToId(this.repo, 'HEAD')
-    const parent = this.repo.getCommit(head)
+    const head = await Git.Reference.nameToId(this.repo, 'HEAD')
+    const parent = await this.repo.getCommit(head)
     // git commit
     const author = Git.Signature.create(
       'GitNiko',
@@ -59,61 +60,28 @@ class Workspace {
       [parent],
     )
     // todo: git push
+    const remote = await this.repo.getRemote('origin')
+    try {
+      await remote.push(['refs/heads/master:refs/heads/master'], {
+        callbacks: {
+          credentials: (url, userName) =>
+            Git.Cred.userpassPlaintextNew(
+              process.env.GIT_ACCOUNT,
+              process.env.GIT_PASSWORD,
+            ),
+          // Git.Cred.sshKeyNew(
+          //   'GitNiko',
+          //   '6f3ea1686b718c612ea3c4b078e777ae46fd3ade',
+          // ),
+          certificateCheck: function() {
+            return 1
+          },
+        },
+      })
+    } catch (e) {
+      console.log(e)
+    }
+    return true
   }
 }
-
-// async function Workspace(url, option) {
-//   if (option && option.workspaceDir) {
-//     workspaceDir = option.workspaceDir
-//   }
-//   if (!fs.existsSync(workspaceDir)) {
-//     fs.mkdir(workspaceDir)
-//   }
-
-//   if (fs.existsSync(RepoDir)) {
-//     // exist and fetch
-//     this.repo = await Git.Repository.open(RepoDir)
-//     await this.repo.fetch(url)
-//   } else {
-//     //
-//     this.repo = await Git.Clone(url, workspaceDir)
-//   }
-// }
-// Workspace.prototype.fuck = function() {}
-
-// Workspace.prototype.save = async function(content) {
-//   // git add
-//   fs.writeFileSync(FullFilePath, content, 'utf-8')
-//   const index = await this.repo.refreshIndex()
-//   await index.addByPath(FilePath)
-//   await index.write()
-//   const oid = await index.writeTree()
-//   const head = Git.Reference.nameToId(this.repo, 'HEAD')
-//   const parent = this.repo.getCommit(head)
-//   // git commit
-//   const author = Git.Signature.create(
-//     'GitNiko',
-//     'galaxis.ling@gmail.com',
-//     123456789,
-//     60,
-//   )
-//   const commiter = Git.Signature.create(
-//     'GitNiko',
-//     'galaxis.ling@gmail.com',
-//     987654321,
-//     90,
-//   )
-//   const commit = this.repo.createCommit(
-//     'HEAD',
-//     author,
-//     commiter,
-//     'commit external data',
-//     oid,
-//     [parent],
-//   )
-//   // todo: git push
-// }
-// exports.createWrokspace = async function() {
-//   return new Workspace(arguments)
-// }
 exports.Workspace = Workspace
