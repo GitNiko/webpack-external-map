@@ -39,18 +39,8 @@ class Workspace {
     const head = await Git.Reference.nameToId(this.repo, 'HEAD')
     const parent = await this.repo.getCommit(head)
     // git commit
-    const author = Git.Signature.create(
-      'GitNiko',
-      'galaxis.ling@gmail.com',
-      123456789,
-      60,
-    )
-    const commiter = Git.Signature.create(
-      'GitNiko',
-      'galaxis.ling@gmail.com',
-      987654321,
-      90,
-    )
+    const author = Git.Signature.now('GitNiko', 'galaxis.ling@gmail.com')
+    const commiter = Git.Signature.now('GitNiko', 'galaxis.ling@gmail.com')
     const commit = this.repo.createCommit(
       'HEAD',
       author,
