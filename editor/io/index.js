@@ -1,6 +1,9 @@
 const fs = require('fs')
 const path = require('path')
+const Util = require('util')
 const Git = require('nodegit')
+
+const readFile = Util.promisify(fs.readFile)
 
 let workspaceDir = `${process.cwd()}/.workspace`
 const RepoDir = workspaceDir
@@ -26,10 +29,20 @@ class Workspace {
     }
   }
 
-  async save(content) {
+  async fetch() {
     // fetch before change
     await this.repo.fetch('origin')
     await this.repo.mergeBranches('master', 'origin/master')
+  }
+
+  async getMapping() {
+    await this.fetch()
+    const data = await readFile(FullFilePath)
+    return JSON.parse(data)
+  }
+
+  async save(content) {
+    await this.fetch()
 
     fs.writeFileSync(FullFilePath, content, 'utf-8')
     const index = await this.repo.refreshIndex()

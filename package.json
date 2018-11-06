@@ -5,8 +5,11 @@
   "main": "index.js",
   "scripts": {
     "test": "node test/index.js",
-    "testIO": "node text/io.text.js",
+    "testIO": "jest ./test/io.test.js",
     "dev": "node ./editor/server.js"
+  },
+  "jest": {
+    "transform": {}
   },
   "repository": {
     "type": "git",
@@ -35,6 +38,7 @@
     "fs-extra": "^7.0.0",
     "html-webpack-plugin": "^4.0.0-beta.2",
     "isomorphic-unfetch": "^3.0.0",
+    "jest": "^23.6.0",
     "koa": "^2.6.1",
     "koa-router": "^7.4.0",
     "next": "^7.0.2",

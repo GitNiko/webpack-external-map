@@ -3,13 +3,15 @@ const Koa = require('koa')
 const next = require('next')
 const Router = require('koa-router')
 const proxy = require('./middlewares/proxy')
+const { Workspace } = require('./io/index')
 
 const port = parseInt(process.env.PORT, 10) || 3000
 const dev = process.env.NODE_ENV !== 'production'
 const app = next({ dev, dir: './editor' })
 const handle = app.getRequestHandler()
 
-console.log('process', process)
+const workspace = new Workspace()
+workspace.init(process.env.REPO_URL)
 
 app.prepare().then(() => {
   const server = new Koa()
@@ -25,6 +27,10 @@ app.prepare().then(() => {
   //   await app.render(ctx.req, ctx.res, '/a', ctx.query)
   //   ctx.respond = false
   // })
+
+  router.get('/api/mapping', async ctx => {})
+
+  router.post('/api/commit', async ctx => {})
 
   router.get('*', async ctx => {
     await handle(ctx.req, ctx.res)
