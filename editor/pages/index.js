@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { Layout, Input } from 'antd'
-import {getExternMapJson, getPackageInfo} from '../../isomorphic/request'
+import {getExternMapJson, getPackageInfo, searchPackage} from '../../isomorphic/request'
 import 'antd/dist/antd.css'
 
 const { Header, Footer, Content } = Layout
@@ -10,7 +10,9 @@ export default class Home extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      versions:[]
+      versions:[],
+      packages:[],
+      total: 0,
     }
   }
   componentDidMount() {
@@ -21,7 +23,21 @@ export default class Home extends Component {
     });
     getPackageInfo().then(res => console.log(res))
   }
+  onSearch = (value) => {
+    searchPackage(value).then(data => {
+      this.setState({
+        packages: data.objects,
+        total: data.total
+      })
+    })
+  }
   render() {
+    const {packages} = this.state
+    const Packages = packages.map((e, i) => {
+      return (
+        <div key={i}>{e.package.name }</div>
+      )
+    })
     return (
       <Layout>
         <Header>
@@ -29,10 +45,12 @@ export default class Home extends Component {
             placeholder="Search packages"
             enterButton="Search"
             size="large"
-            onSearch={value => console.log(value)}
+            onSearch={this.onSearch}
           />
         </Header>
-        <Content />
+        <Content>
+          {Packages}
+        </Content>
       </Layout>
     )
   }

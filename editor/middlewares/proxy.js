@@ -20,7 +20,7 @@ async function proxy(ctx, next) {
     //
     console.log('enter proxy')
     const proxyHref = ctx.header[NeedProxy]
-    const res = await get(proxyHref)
+    const res = await get(proxyHref + ctx.search)
     let body = ''
     res.on('data', chunk => (body += chunk))
     res.on('error', err => console.log(err))
