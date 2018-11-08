@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Layout, Input } from 'antd'
 import Link from 'next/link'
-import {getExternMapJson, getPackageInfo, searchPackage} from '../../isomorphic/request'
+import {getExternMapJson, getPackageInfo, searchPackage} from '../api/request'
 import 'antd/dist/antd.css'
 
 const { Header, Footer, Content } = Layout

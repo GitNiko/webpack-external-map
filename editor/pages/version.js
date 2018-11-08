@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { withRouter } from 'next/router'
 import Link from 'next/link'
-import {getExternMapJson} from '../../isomorphic/request'
+import {getExternMapJson} from '../api/request'
 
 export default withRouter(({ router }) => {
   const [versions, setVersions] = useState({})
@@ -18,5 +18,7 @@ export default withRouter(({ router }) => {
       <div key={i}><Link href={{ pathname: '/editor', query: { version: k, name: name } }}>{ k }</Link></div>
     )
   })
-  return (<div>{Versions}</div>)
+  return (
+    <div>{Versions}</div>
+  )
 })
