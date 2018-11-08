@@ -36,7 +36,7 @@ module.exports = {
     return ajax(`${Registry}/${pkg}`)
   },
   searchPackage: name => {
-    return ajax(`${Registry}/-/v1/search`, { text: name })
+    return ajax(`${Registry}/-/v1/search`, { text: name, size: 100 })
   },
   commit: mapping => {
     // return ajax('/api/mapping', {
