@@ -38,14 +38,14 @@ export const searchPackage = name => {
   return ajax(`${Registry}/-/v1/search`, { text: name, size: 100 })
 }
 export const getPackageMeta = (pkg = 'rct-form', version) => {
-  return ajax(`${Unpkg}/${pkg}@${version}?meta`)
+  return ajax(`${Unpkg}/${pkg}@${version}/?meta`)
 }
 export const getPackageMetaList = (type = 'file') => (...args) => {
   const fold = (meta, result) => {
     result.push(meta)
     if (meta.type === 'directory' && meta.files.length) {
       for (let i in meta.files) {
-        fold(i, result)
+        fold(meta.files[i], result)
       }
     }
     return
@@ -53,7 +53,7 @@ export const getPackageMetaList = (type = 'file') => (...args) => {
   return getPackageMeta(...args).then(meta => {
     let list = []
     fold(meta, list)
-    return list
+    return list.filter(e => e.type === type)
   })
 }
 export const commit = mapping => {

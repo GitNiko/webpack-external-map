@@ -15,7 +15,7 @@ export default withRouter(({ router }) => {
   }, [])
   const Versions = Object.keys(versions).map((k, i) => {
     return (
-      <div key={i}><Link href={{ pathname: '/editor', query: { version: k, name: name } }}>{ k }</Link></div>
+      <div key={i}><Link href={{ pathname: '/editor', query: { range: k, name: name } }}>{ k }</Link></div>
     )
   })
   return (
