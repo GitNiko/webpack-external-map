@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { withRouter } from 'next/router'
 import Link from 'next/link'
 import semver from "semver";
@@ -19,19 +19,94 @@ const Block = ({data=''}) => {
   )
 }
 
+// const Drageable = WrappedComponent => (props) => {
+//   const onDragOver = ev => {
+//     ev.preventDefault()
+//   }
+//   const newProps = {
+//     ...props,
+//     draggable: true
+//   }
+//   return (
+//     <WrappedComponent {...newProps}/>
+//   )
+// }
+
+const getSortable = (handlers={}) => {
+  const onDragStart = (ev) => {
+    ev.dataTransfer.dropEffect = 'copy'
+    ev.dataTransfer.setData('text/plain', data)
+  }
+  const onDragOver = (ev) => {
+    ev.preventDefault()
+    const rect = ev.target.getBoundingClientRect()
+    const middle = rect.height/2
+    const offset = ev.clientY - rect.top
+    // console.log(offset)
+    if(offset < middle) {
+      onDragDownward(ev)
+    } else {
+      onDragUpward(ev)
+    }
+  }
+  const onDrop = (ev) => {
+    console.log('onDrop in Block')
+    ev.stopPropagation()
+  }
+  const onDragDownward = (ev) => {
+    if(handlers.onDragDownward) {
+      handlers.onDragDownward(ev)
+    }
+  }
+  const onDragUpward = (ev) => {
+    if(handlers.onDragUpward) {
+      handlers.onDragUpward(ev)
+    }
+  }
+  const draggable = true
+  // remove Unknown event handler property avoid warning
+  let cloneHandlers = {...handlers}
+  delete cloneHandlers['onDragDownward']
+  delete cloneHandlers['onDragUpward']
+  return {
+    onDragStart,onDragOver,onDrop,draggable, ...cloneHandlers
+  }
+}
+
+
+const SortBlock = ({data=''}) => {
+  const sortableProps = getSortable({
+    onDragStart: (ev) => {
+      ev.dataTransfer.dropEffect = 'copy'
+      ev.dataTransfer.setData('text/plain', data)
+    },
+    onDragDownward: (ev) => {
+      console.log('down')
+    },
+    onDragUpward: (ev) => {
+      console.log('up')
+    }
+  }) 
+
+  return (
+    <ul className="file" {...sortableProps}>{data}</ul>
+  )
+}
+
 const SourceCard = ({onChange=noop, title=''}) => {
   const [source, setSource] = useState([])
   const onDrop = (ev) => {
+    console.log('in source card')
     const data = ev.dataTransfer.getData("text/plain");
     setSource([...source, data])
-    ev.preventDefault();
+    // ev.preventDefault()
   }
   const onDragOver = (ev) => {
-    ev.preventDefault();
+    ev.preventDefault()
   }
   const Blocks = source.map((v, i) => {
     return (
-      <Block key={i} data={v}/>
+      <SortBlock key={i} data={v}/>
     )
   })
   return (
