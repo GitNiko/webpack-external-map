@@ -112,24 +112,27 @@ const SortBlock = ({
   )
 }
 
-const SourceCard = ({ onChange = noop, title = '' }) => {
-  const [source, setSource] = useState([])
-  const [solutionName, setSolutionName] = useState('')
-  
+const SourceCard = ({
+  onSourceChange = noop,
+  onSolutionNameChange = noop,
+  source = [],
+  solutionName = '',
+  type,
+  theKey,
+}) => {
   const onDrop = ev => {
     const data = ev.dataTransfer.getData('text/plain')
     if (source.indexOf(data) !== -1) {
       // skip when exist
       return
     }
-    setSource([...source, data])
+    onSourceChange([...source, data], theKey)
   }
   const onDragOver = ev => {
     ev.preventDefault()
   }
   const onItemDragStart = data => {
-    // remove item when drag start
-    // setSource(source.filter(v => v !== data))
+    // todo
   }
   const onDelete = data => {
     console.log(data)
@@ -151,8 +154,11 @@ const SourceCard = ({ onChange = noop, title = '' }) => {
       } else {
         newSource.splice(index, 0, data)
       }
-      setSource(newSource)
+      onSourceChange(newSource, theKey)
     }
+  }
+  const onNameChange = ev => {
+    onSolutionNameChange(ev.target.value, theKey)
   }
   const Blocks = source.map((v, i) => {
     return (
@@ -169,7 +175,7 @@ const SourceCard = ({ onChange = noop, title = '' }) => {
     <div>
       <div>
         <label>Solution Name:</label>
-        <input />
+        <input value={solutionName} onChange={onNameChange} />
       </div>
       <div onDrop={onDrop} onDragOver={onDragOver} className="source-card">
         {Blocks}
@@ -304,9 +310,6 @@ export default withRouter(({ router }) => {
 
   const [windowRoot, setWindowRoot] = useState('')
 
-  const [jsSolutions, setJSSolution] = useState([{}])
-  const [cssSolutions, setCSSSolution] = useState([{}])
-
   useEffect(
     () => {
       getPackageInfo(name).then(info => {
@@ -332,6 +335,7 @@ export default withRouter(({ router }) => {
     [selectedVersion],
   )
 
+  // on version selected
   const onSelect = e => {
     setSelectedVersion(e.target.value)
   }
@@ -345,6 +349,43 @@ export default withRouter(({ router }) => {
   })
   const Files = source.map((v, i) => {
     return <Block key={i} data={v} />
+  })
+
+  const [jsSolutions, setJSSolutions] = useState([
+    {
+      solutionName: '',
+      source: [],
+    },
+  ])
+  const [cssSolutions, setCSSSolutions] = useState([{
+    solutionName: '',
+    source: [],
+  }])
+
+  const onSolutionNameChangeOfJS = (solutionName, i) => {
+    const newSolution = { ...jsSolutions[i], solutionName }
+    jsSolutions[i] = newSolution
+    setJSSolutions(jsSolutions)
+  }
+  const onSourceChangeOfJS = (source, i) => {
+    const newSolution = { ...jsSolutions[i], source }
+    jsSolutions[i] = newSolution
+    setJSSolutions(jsSolutions)
+  }
+  const JSSolutions = jsSolutions.map((solution, i) => {
+    return (
+      <div>
+        <h4>JavaScript</h4>
+        <SourceCard
+          key = {i}
+          theKey = {i}
+          onSolutionNameChange={onSolutionNameChangeOfJS}
+          onSourceChange={onSourceChangeOfJS}
+          source={solution.source}
+          solutionName={solution.solutionName}
+        />
+      </div>
+    )
   })
 
   return (
@@ -366,10 +407,7 @@ export default withRouter(({ router }) => {
           <label>window.</label>
           <input />
         </div>
-        <div>
-          <h4>JavaScript</h4>
-          <SourceCard source={['/packks']} title="dev" />
-        </div>
+        {JSSolutions}
       </div>
       <div>测试窗口</div>
     </div>
