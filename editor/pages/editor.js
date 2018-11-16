@@ -18,17 +18,48 @@ const getExtension = str => str.split('.').pop()
 const encode = (...args) => args.reduce((acc, x) => (acc = acc + '*' + x))
 const decode = str => str.split('*')
 
-const SourceCard = ({ source = [], solutionName = '', type, droppableId, onSolutionNameChange=noop }) => {
+const BlurInput = ({ value, onChange = noop }) => {
+  const [state, setState] = useState(value)
+  //  const onValueChange
+  useEffect(
+    () => {
+      setState(value)
+    }, [value]
+  )
+  return (
+    <input
+      onChange={ev => setState(ev.target.value)}
+      value={state}
+      onBlur={() => onChange(state)}
+    />
+  )
+}
+const SourceCard = ({
+  source = [],
+  solutionName = '',
+  type,
+  droppableId,
+  onDelete,
+  onSolutionNameChange = noop,
+}) => {
   const [name, setName] = useState(solutionName)
   const onNameChange = ev => {
     setName(ev.target.value)
     // onSolutionNameChange(ev.target.value, theKey)
   }
+  const onClick = ev => {
+    onDelete(droppableId)
+  }
   return (
     <div>
       <div>
         <label>Solution Name:</label>
-        <input value={name} onChange={onNameChange} onBlur={() => onSolutionNameChange(solutionName, name)}/>
+        <input
+          value={name}
+          onChange={onNameChange}
+          onBlur={() => onSolutionNameChange(droppableId, name)}
+        />
+        <button onClick={onClick}>Delete</button>
       </div>
       <Droppable droppableId={droppableId}>
         {(provided, snapshot) => (
@@ -89,6 +120,10 @@ const getItemStyle = (isDragging, draggableStyle) => ({
 function useSolution(
   defaultSolution = {
     root: '',
+    primaryKey: {
+      js: {},
+      css: {},
+    },
     js: {
       development: [],
       deployment: [],
@@ -96,7 +131,22 @@ function useSolution(
     css: {},
   },
 ) {
-  const [state, setState] = useState(defaultSolution)
+  const calcPrimaryKey = state => {
+    const keysToPrimary = obj =>
+      Object.keys(obj).reduce((acc, x, i) => {
+        acc[i] = x
+        return acc
+      }, {})
+    const newState = { primaryKey: {}, js: {}, css: {}, ...state }
+    const jsPrimaryKey = keysToPrimary(newState.js)
+    newState.primaryKey.js = jsPrimaryKey
+
+    const cssPrimaryKey = keysToPrimary(newState.css)
+    newState.primaryKey.css = cssPrimaryKey
+
+    return newState
+  }
+  const [state, setState] = useState(calcPrimaryKey(defaultSolution))
 
   const reOrder = type => (name, src, dest) => {
     const newState = { ...state }
@@ -128,24 +178,40 @@ function useSolution(
     setState(newState)
   }
 
-  const create = type => name => {
+  const create = type => () => {
     const newState = { ...state }
+    // invoid duplicate
+    const newKey = Object.keys(newState.primaryKey[type]).length
+    const name = newKey
+    newState.primaryKey[type][newKey] = name
     newState[type][name] = []
+
     setState(newState)
   }
 
-  const del = type => name => {
+  const del = type => key => {
     const newState = { ...state }
+    const name = newState.primaryKey[type][key]
+    // remove key
+    delete newState.primaryKey[type][key]
+    // remove value
     delete newState[type][name]
     setState(newState)
   }
 
-  const rename = type => (name, newName) => {
+  const rename = type => (key, newName) => {
     const newState = { ...state }
+    const name = newState.primaryKey[type][key]
     const origin = newState[type][name]
+    // remove value
     delete newState[type][name]
+    // update value
+    newState.primaryKey[type][key] = newName
     newState[type][newName] = origin
     setState(newState)
+  }
+  const getNameByKey = type => key => {
+    return state.primaryKey[type][key]
   }
 
   return [
@@ -158,18 +224,19 @@ function useSolution(
       del,
       rename,
       reOrder,
+      getNameByKey,
+      setSolution: solution => setState(calcPrimaryKey(solution)),
     },
   ]
 }
 
 export default withRouter(({ router }) => {
-  const { name, range } = router.query
+  const { name, range: defaultRange } = router.query
 
   const [versions, setVersions] = useState([])
   const [selectedVersion, setSelectedVersion] = useState('')
   const [source, setSource] = useState([])
-
-  const [windowRoot, setWindowRoot] = useState('')
+  const [range, setRange] = useState(defaultRange)
 
   useEffect(
     () => {
@@ -181,8 +248,15 @@ export default withRouter(({ router }) => {
         // default is the first version
         setSelectedVersion(version[0] || '')
       })
+      if (name && range) {
+        getExternMapJson().then(extnMap => {
+          if (extnMap[name] && extnMap[name][range]) {
+            setSolution(extnMap[name][range])
+          }
+        })
+      }
     },
-    [name],
+    [name, range],
   )
 
   useEffect(
@@ -198,6 +272,9 @@ export default withRouter(({ router }) => {
               ),
           )
         })
+      } else {
+        // clear
+        setSource([])
       }
     },
     [selectedVersion],
@@ -217,13 +294,24 @@ export default withRouter(({ router }) => {
   })
   const [
     solution,
-    { setRoot, insert, remove, create, del, rename, reOrder },
+    {
+      setRoot,
+      setSolution,
+      insert,
+      remove,
+      create,
+      del,
+      rename,
+      reOrder,
+      getNameByKey,
+    },
   ] = useSolution()
-  const onAddSolution = type => {
-    create(type)()
+  const onAddSolution = create
+  const onSolutionNameChange = type => (key, newName) => {
+    rename(type)(decode(key).pop(), newName)
   }
-  const onSolutionNameChange = (type)=>(name, newName) => {
-    rename(type)(name, newName)
+  const onSolutionDelete = type => key => {
+    del(type)(decode(key).pop())
   }
   const onDragStart = ev => {
     /*...*/
@@ -244,7 +332,8 @@ export default withRouter(({ router }) => {
     if (!destination) {
       // remove solution when dropped outside solution
       if (source.droppableId !== 'source') {
-        const name = decode(source.droppableId)[1]
+        const key = decode(source.droppableId)[1]
+        const name = getNameByKey(type)(key)
         remove(type)(name, decode(draggableId).pop(), source.index)
       }
       return
@@ -260,8 +349,8 @@ export default withRouter(({ router }) => {
     ) {
       return
     }
-
-    const name = decode(destination.droppableId)[1]
+    const key = decode(destination.droppableId)[1]
+    const name = getNameByKey(type)(key)
     if (source.droppableId === destination.droppableId) {
       reOrder(type)(name, source.index, destination.index)
     } else {
@@ -275,21 +364,29 @@ export default withRouter(({ router }) => {
     }
   }
   const getSolution = type => sln =>
-    Object.keys(sln[type]).map((solutionName, i) => {
+    Object.keys(sln.primaryKey[type]).map((key, i) => {
+      const solutionName = sln.primaryKey[type][key]
       const source = sln[type][solutionName]
-      const droppableId = encode(type, solutionName)
+      const droppableId = encode(type, key)
       return (
         <SourceCard
           key={i}
           source={source}
           solutionName={solutionName}
-          // onSolutionNameChange={onSolutionNameChange(type)}
+          onSolutionNameChange={onSolutionNameChange(type)}
           droppableId={droppableId}
+          onDelete={onSolutionDelete(type)}
         />
       )
     })
   const JSSolutions = getSolution('js')(solution)
   const CSSSolutions = getSolution('css')(solution)
+
+
+  // test window
+  const onRunTest = () => {
+    console.log(solution)
+  }
 
   return (
     <div className="container">
@@ -339,19 +436,24 @@ export default withRouter(({ router }) => {
           <h3>资源窗口</h3>
           <div>
             <label>Version Range:</label>
-            <input />
+            <BlurInput value={range} onChange={x => setRange(x)} />
           </div>
           <div>
-            <label>window.</label>
-            <input />
+            <label>root:</label>
+            <BlurInput value={solution.root} onChange={x => setRoot(x)} />
           </div>
           <h4>Javascript</h4>
           {JSSolutions}
+          <button onClick={onAddSolution('js')}>Add</button>
           <h4>Css</h4>
           {CSSSolutions}
+          <button onClick={onAddSolution('css')}>Add</button>
         </div>
       </DragDropContext>
-      <div>测试窗口</div>
+      <div>
+        <h3>测试窗口</h3>
+        <div><button onClick={onRunTest}>Test</button></div>
+      </div>
     </div>
   )
 })
