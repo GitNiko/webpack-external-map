@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
-// import { resolve } from 'uri-js'
+import { withRouter } from 'next/router'
 
-export default function Test({}) {
+export default withRouter(function Test({router}) {
+  const { root:rootName, urls, name } = router.query
+  console.log('urls', urls)
   const [root, setRoot] = useState('')
   const [result, setResult] = useState(false)
   function loadScript(urls) {
@@ -18,15 +20,13 @@ export default function Test({}) {
     )
     return Promise.all(loads)
   }
-  function receiveMessage(event) {
-    const { urls, root:newRoot = '' } = event.data
+  useEffect(() => {
     if(!urls) {
       return
     }
-    console.log(event);
-    setRoot(newRoot)
-    loadScript(urls).then(() => { 
-      if(window[newRoot]) {
+    setRoot(rootName)
+    loadScript(urls.split(',')).then(() => { 
+      if(window[rootName]) {
         setResult(true)
       } else {
         setResult(false)
@@ -34,22 +34,10 @@ export default function Test({}) {
     }).catch(
       setResult(false)
     )
-  }
-  function refresh() {
-    window.location.reload()
-  }
-  useEffect(() => {
-    window.addEventListener('message', receiveMessage, false)
-    window.parent.postMessage({
-      type: '@editor/iframe_ready',
-      iframeId: window.frameElement.id
-    })
-    return function cleanup() {
-      window.removeEventListener('message', receiveMessage)
-    }
-  })
+  }, [urls])
   return (
     <div>
+      <div><label>solution name: {name}</label></div>
       <div>
         <label>
           root:
@@ -59,4 +47,4 @@ export default function Test({}) {
       <div>test {result ? 'success' : 'fail'}</div>
     </div>
   )
-}
+})

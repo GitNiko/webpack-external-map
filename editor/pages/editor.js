@@ -387,44 +387,24 @@ export default withRouter(({ router }) => {
   const JSSolutions = getSolution('js')(solution)
   const CSSSolutions = getSolution('css')(solution)
 
-  function renderIframe(iframeIds) {
+  function onRunTest() {
     const parentId = 'testList'
-    const src = '/test'
     const className = 'test-window'
     const parent = document.getElementById(parentId)
     // clear previous iframe
     while (parent.firstChild) {
       parent.removeChild(parent.firstChild);
     }
-    const loads = iframeIds.map(id => new Promise((resolve, reject) => {
+    Object.keys(solution.js).forEach(key => {
+      const urls = solution.js[key].map(e => unpkg(e, name, selectedVersion)).join(',')
+      const root = cutWindow(solution.root)
       const iframe = document.createElement('iframe')
-      iframe.id = id
-      iframe.src = src
+      iframe.id = key
+      iframe.src = `/test?urls=${urls}&root=${root}&name=${key}`
       iframe.className = className
-      iframe.onload = () => resolve(`on load iframeId ${id}`)
-      iframe.onerror = () => reject(`on load error iframeId ${id}`)
       parent.appendChild(iframe)
-    }))
-    window.addEventListener('message', )
-    return Promise.all(loads)
-  }
-
-  function onRunTest() {
-    renderIframe(Object.keys(solution.js)).then(() => {
-      Array.from(document.getElementsByClassName('test-window')).forEach(e => {
-        e.contentWindow.postMessage({
-          urls:solution.js[e.id].map(e => unpkg(e, name, selectedVersion)),
-          root: cutWindow(solution.root)
-        })
-      })
     })
   }
-
-  // const TestWindows = Object.keys(solution.js).map((key) => {
-  //   return (
-  //     <TestWindow id={key} key={key}/>
-  //   )
-  // })
 
   return (
     <div className="container">
@@ -491,14 +471,9 @@ export default withRouter(({ router }) => {
       <div>
         <h3>测试窗口</h3>
         <div><button onClick={onRunTest}>Test</button></div>
-        <div id='testList'></div>
+        <div id='testList' className="test-group">
+        </div>
       </div>
     </div>
   )
 })
-
-// const TestWindow = ({id}) => {
-//   return (
-//     <iframe id={id} src={'/test'} className="test-window"/>
-//   )
-// }
