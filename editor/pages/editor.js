@@ -10,6 +10,8 @@ import {
 } from '../api/request'
 
 import './editor.less'
+import Test from './test';
+import { resolve } from 'any-promise';
 
 const noop = () => {}
 
@@ -17,6 +19,9 @@ const getExtension = str => str.split('.').pop()
 // a*b*c*d ...
 const encode = (...args) => args.reduce((acc, x) => (acc = acc + '*' + x))
 const decode = str => str.split('*')
+const cutHead = str => str.slice(1)
+const unpkg = (str, name, version) => `https://unpkg.com/${name}@${version}/${str}`
+const cutWindow = str => str.split('.')[1]
 
 const BlurInput = ({ value, onChange = noop }) => {
   const [state, setState] = useState(value)
@@ -269,7 +274,7 @@ export default withRouter(({ router }) => {
               .filter(
                 path =>
                   getExtension(path) === 'js' || getExtension(path) === 'css',
-              ),
+              ).map(cutHead),
           )
         })
       } else {
@@ -382,11 +387,44 @@ export default withRouter(({ router }) => {
   const JSSolutions = getSolution('js')(solution)
   const CSSSolutions = getSolution('css')(solution)
 
-
-  // test window
-  const onRunTest = () => {
-    console.log(solution)
+  function renderIframe(iframeIds) {
+    const parentId = 'testList'
+    const src = '/test'
+    const className = 'test-window'
+    const parent = document.getElementById(parentId)
+    // clear previous iframe
+    while (parent.firstChild) {
+      parent.removeChild(parent.firstChild);
+    }
+    const loads = iframeIds.map(id => new Promise((resolve, reject) => {
+      const iframe = document.createElement('iframe')
+      iframe.id = id
+      iframe.src = src
+      iframe.className = className
+      iframe.onload = () => resolve(`on load iframeId ${id}`)
+      iframe.onerror = () => reject(`on load error iframeId ${id}`)
+      parent.appendChild(iframe)
+    }))
+    window.addEventListener('message', )
+    return Promise.all(loads)
   }
+
+  function onRunTest() {
+    renderIframe(Object.keys(solution.js)).then(() => {
+      Array.from(document.getElementsByClassName('test-window')).forEach(e => {
+        e.contentWindow.postMessage({
+          urls:solution.js[e.id].map(e => unpkg(e, name, selectedVersion)),
+          root: cutWindow(solution.root)
+        })
+      })
+    })
+  }
+
+  // const TestWindows = Object.keys(solution.js).map((key) => {
+  //   return (
+  //     <TestWindow id={key} key={key}/>
+  //   )
+  // })
 
   return (
     <div className="container">
@@ -453,7 +491,14 @@ export default withRouter(({ router }) => {
       <div>
         <h3>测试窗口</h3>
         <div><button onClick={onRunTest}>Test</button></div>
+        <div id='testList'></div>
       </div>
     </div>
   )
 })
+
+// const TestWindow = ({id}) => {
+//   return (
+//     <iframe id={id} src={'/test'} className="test-window"/>
+//   )
+// }
