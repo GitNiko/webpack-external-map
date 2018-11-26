@@ -10,26 +10,39 @@ import {
 } from '../api/request'
 
 import './editor.less'
-import Test from './test';
-import { resolve } from 'any-promise';
+import Test from './test'
+import { resolve } from 'any-promise'
 
-const noop = () => {}
+function noop() {}
 
-const getExtension = str => str.split('.').pop()
+function getExtension(str) {
+  return str.split('.').pop()
+}
 // a*b*c*d ...
-const encode = (...args) => args.reduce((acc, x) => (acc = acc + '*' + x))
-const decode = str => str.split('*')
-const cutHead = str => str.slice(1)
-const unpkg = (str, name, version) => `https://unpkg.com/${name}@${version}/${str}`
-const cutWindow = str => str.split('.')[1]
+function encode(...args) {
+  return args.reduce((acc, x) => (acc = acc + '*' + x))
+}
+function decode(str) {
+  return str.split('*')
+}
+function cutHead(str) {
+  return str.slice(1)
+}
+function unpkg(str, name, version) {
+  return `https://unpkg.com/${name}@${version}/${str}`
+}
+function cutWindow(str) {
+  return str.split('.')[1]
+}
 
-const BlurInput = ({ value, onChange = noop }) => {
+function BlurInput({ value, onChange = noop }) {
   const [state, setState] = useState(value)
   //  const onValueChange
   useEffect(
     () => {
       setState(value)
-    }, [value]
+    },
+    [value],
   )
   return (
     <input
@@ -39,22 +52,23 @@ const BlurInput = ({ value, onChange = noop }) => {
     />
   )
 }
-const SourceCard = ({
+function SourceCard({
   source = [],
   solutionName = '',
   type,
   droppableId,
   onDelete,
   onSolutionNameChange = noop,
-}) => {
+}) {
   const [name, setName] = useState(solutionName)
-  const onNameChange = ev => {
+  function onNameChange(ev) {
     setName(ev.target.value)
     // onSolutionNameChange(ev.target.value, theKey)
   }
-  const onClick = ev => {
+  function onClick(ev) {
     onDelete(droppableId)
   }
+
   return (
     <div>
       <div>
@@ -101,26 +115,30 @@ const SourceCard = ({
   )
 }
 
-const getListStyle = isDraggingOver => ({
-  background: isDraggingOver ? 'lightblue' : 'lightgrey',
-  padding: grid,
-  width: 250,
-})
+function getListStyle(isDraggingOver) {
+  return {
+    background: isDraggingOver ? 'lightblue' : 'lightgrey',
+    padding: grid,
+    width: 250,
+  }
+}
 
 const grid = 8
 
-const getItemStyle = (isDragging, draggableStyle) => ({
-  // some basic styles to make the items look a bit nicer
-  userSelect: 'none',
-  padding: grid * 2,
-  margin: `0 0 ${grid}px 0`,
+function getItemStyle(isDragging, draggableStyle) {
+  return {
+    // some basic styles to make the items look a bit nicer
+    userSelect: 'none',
+    padding: grid * 2,
+    margin: `0 0 ${grid}px 0`,
 
-  // change background colour if dragging
-  background: isDragging ? 'lightgreen' : 'grey',
+    // change background colour if dragging
+    background: isDragging ? 'lightgreen' : 'grey',
 
-  // styles we need to apply on draggables
-  ...draggableStyle,
-})
+    // styles we need to apply on draggables
+    ...draggableStyle,
+  }
+}
 
 function useSolution(
   defaultSolution = {
@@ -136,12 +154,13 @@ function useSolution(
     css: {},
   },
 ) {
-  const calcPrimaryKey = state => {
-    const keysToPrimary = obj =>
-      Object.keys(obj).reduce((acc, x, i) => {
+  function calcPrimaryKey(state) {
+    function keysToPrimary(obj) {
+      return Object.keys(obj).reduce((acc, x, i) => {
         acc[i] = x
         return acc
       }, {})
+    }
     const newState = { primaryKey: {}, js: {}, css: {}, ...state }
     const jsPrimaryKey = keysToPrimary(newState.js)
     newState.primaryKey.js = jsPrimaryKey
@@ -274,7 +293,8 @@ export default withRouter(({ router }) => {
               .filter(
                 path =>
                   getExtension(path) === 'js' || getExtension(path) === 'css',
-              ).map(cutHead),
+              )
+              .map(cutHead),
           )
         })
       } else {
@@ -286,7 +306,7 @@ export default withRouter(({ router }) => {
   )
 
   // on version selected
-  const onSelect = e => {
+  function onSelect(e) {
     setSelectedVersion(e.target.value)
   }
 
@@ -318,13 +338,13 @@ export default withRouter(({ router }) => {
   const onSolutionDelete = type => key => {
     del(type)(decode(key).pop())
   }
-  const onDragStart = ev => {
+  function onDragStart(ev){
     /*...*/
   }
-  const onDragUpdate = () => {
+  function onDragUpdate(){
     /*...*/
   }
-  const onDragEnd = result => {
+  function onDragEnd(result) {
     // the only one that is required
     const { source, destination, draggableId } = result
     const type = getExtension(draggableId)
@@ -343,11 +363,11 @@ export default withRouter(({ router }) => {
       }
       return
     }
-    // not need change for source
+    // don't need change for source
     if (destination.droppableId === 'source') {
       return
     }
-    // not need change between solutions
+    // don't need change between solutions
     if (
       source.droppableId !== 'source' &&
       source.droppableId !== destination.droppableId
@@ -393,10 +413,12 @@ export default withRouter(({ router }) => {
     const parent = document.getElementById(parentId)
     // clear previous iframe
     while (parent.firstChild) {
-      parent.removeChild(parent.firstChild);
+      parent.removeChild(parent.firstChild)
     }
     Object.keys(solution.js).forEach(key => {
-      const urls = solution.js[key].map(e => unpkg(e, name, selectedVersion)).join(',')
+      const urls = solution.js[key]
+        .map(e => unpkg(e, name, selectedVersion))
+        .join(',')
       const root = cutWindow(solution.root)
       const iframe = document.createElement('iframe')
       iframe.id = key
@@ -404,6 +426,10 @@ export default withRouter(({ router }) => {
       iframe.className = className
       parent.appendChild(iframe)
     })
+  }
+
+  function onSave() {
+    console.log('save', solution)
   }
 
   return (
@@ -470,9 +496,11 @@ export default withRouter(({ router }) => {
       </DragDropContext>
       <div>
         <h3>测试窗口</h3>
-        <div><button onClick={onRunTest}>Test</button></div>
-        <div id='testList' className="test-group">
+        <div>
+          <button onClick={onRunTest}>Test</button>
+          <button onClick={onSave}>Save</button>
         </div>
+        <div id="testList" className="test-group" />
       </div>
     </div>
   )
