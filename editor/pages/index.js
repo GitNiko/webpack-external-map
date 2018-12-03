@@ -72,7 +72,7 @@ export default function Home() {
   }
   const Packages = packages.map((e, i) => {
     return (
-      <div key={i}><Link href={{ pathname: '/version', query: { name: e.package.name } }}>{e.package.name }</Link></div>
+      <div key={i}><Link href={{ pathname: '/version', query: { name: e.package.name } }}><a>{e.package.name }</a></Link></div>
     )
   })
   return (
