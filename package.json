@@ -6,7 +6,8 @@
   "scripts": {
     "test": "node test/index.js",
     "testIO": "jest ./test/io.test.js",
-    "dev": "node ./editor/server.js"
+    "dev": "node ./editor/server.js",
+    "build": "next build"
   },
   "jest": {
     "transform": {}

@@ -1,6 +1,6 @@
 {
     "react": {
-        ">=16.2.0": {
+        ">=16.0.0": {
             "root": "window.React",
             "js": {
                 "development": [
@@ -13,7 +13,7 @@
         }
     },
     "react-dom": {
-        ">=16.2.0": {
+        ">=16.0.0": {
             "root": "root",
             "js": {
                 "development": [

@@ -136,6 +136,7 @@ const init = (
           'webpack-external-map', // <-- Set a meaningful name here for stacktraces
           (data, cb) => {
             data.assets.js = source.js.concat(data.assets.js)
+            console.log('sssssss', data.assets.js)
             data.assets.css = source.css.concat(data.assets.css)
             cb(null, data)
           },

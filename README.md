@@ -1,92 +1,57 @@
 # webpack-external-map
 
-## 需求
-
-## 方案
-
-### json 文件中存放映射，externalConfig -> <script src>
-
+## Motivation
+理想的结果：
+每个需要运行在浏览器的库，在package.json中指定了external的信息。
+package.json
 ```json
 {
-  "moment": {
-    "^2.22.2": {
-      "root": "window.moment",
-      "js": {
-        "deployment": ["moment.js"],
-        "development": ["moment.min.js"],
-        "deployment-i18n": ["moment-with-locales.min.js"],
-        "development-i18n": ["moment-with-locales.js"]
-      }
+  //...
+  "external": {
+    "root": "window.antd",
+    "js": {
+        "deployment": [
+            "dist/antd.min.js"
+        ],
+        "development": [
+            "dist/antd.js"
+        ],
+        "deployment-i18n": [
+            "dist/antd-with-locales.js"
+        ],
+        "development-i18n": [
+            "dist/antd-with-locales.min.js"
+        ]
+    },
+    "css": {
+        "deployment:": [
+            "dist/antd.min.css"
+        ],
+        "development": [
+            "dist/antd.min.css"
+        ]
     },
   },
-  "antd": {
-    "^3.10.0": {
-      "root": "window.antd",
-      "js": {
-        "deployment": ["dist/antd.min.js"],
-        "development": ["dist/antd.js"],
-        "deployment-i18n": ["dist/antd-with-locales.js"],
-        "development-i18n": ["dist/antd-with-locales.min.js"]
-      },
-      "css": {
-        "deployment:": ["dist/antd.min.css"],
-        "development": ["dist/antd.min.css"],
-      },
-    }
-  },
-  "shineout": {
-    "^1.0.10": {
-      "root": "window.shineout",
-      "js": {
-        "deployment": ["shineout.min.js"],
-        "development": ["shineout.min.js"]
-      },
-      "css": {
-        "deployment": ["theme.default.css"],
-        "development": ["theme.default.css"],
-        "theme-antd": ["theme.antd.css"]
-      }
-    }
+  "peerDependencies": {
+    "react": ">=16.0.0",
+    "react-dom": ">=16.0.0"
   }
+  //...
 }
 ```
 
-### 流程
+## Trouble
 
-```js
-[
-  "lodash",
-  "react",
-  "react-dom",
-  "antd",
-  "moment",
-  "babel-polyfill",
-  "shineout"
-]
-// 二维数组可能导致最终拓扑排序错误
-// e.g. [[1, 4, 3], 2, 5] => [[1, 3, 4], 2, 5]
-[
-  ["babel-polyfill", "react", "react-dom"],
-  "lodash",
-  "shineout",
-  "moment",
-]
-// =>
-{
-  lodash: 'window._',
-  react: 'window.React',
-  'react-dom': 'window.ReactDOM',
-  antd: 'window.antd',
-  moment: 'window.moment',
-  'babel-polyfill': 'undefined',
-  shineout: 'window.Shineout'
-}
-{
-  stylesheet: '',
-  script: '',
-}
-[] => 
-// => 生成对应script tag
+CSS的主题可能是个无法回避的坑。
 
-```
-## 注意点
+### peer dependencies
+webpack插件中进行包依赖的拓扑排序时，因为依赖的包都在package-lock.json中，所以在剔除peerDep的时候，不需要处理版本范围的问题。  
+但是，在编辑external后做测试的时候，peerDep的包没有在package.json(甚至都没有package.json)，这个时候就需要处理peerDep的范围，也就是根据peerDep去external中找到对应包，并且范围是适配的。  
+
+### upper limit
+每个包是否存在一个上界限：
+- 必须，如果新版本发布，并且入口文件变了（deploy,development)，这个错误会就不会被发现。为了避免这个可能性，设置上界，新版本情况下，直接不匹配到版本。
+- 不必，绝大部分库是稳定的，入口文件几乎不会变。
+
+不必，正常开发流程都会先走一遍测试环境，最差情况下能在测试环境的时候即可发现错误。
+

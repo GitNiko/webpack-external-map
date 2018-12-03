@@ -31,8 +31,8 @@ const ajax = (url, params, data, method = 'GET', token, timeout = 10000) => {
 export const getExternMapJson = () => {
   return ajax(`/api/mapping`)
 }
-export const getPackageInfo = (pkg = 'rct-form') => {
-  return ajax(`${Registry}/${pkg}`)
+export const getPackageInfo = (pkg = 'rct-form', version) => {
+  return ajax(`${Registry}/${pkg}${version ? '/' + version : ''}`)
 }
 export const searchPackage = name => {
   return ajax(`${Registry}/-/v1/search`, { text: name, size: 100 })
