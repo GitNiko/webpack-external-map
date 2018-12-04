@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import cloneDeep from 'lodash/cloneDeep'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import { withRouter } from 'next/router'
 import Link from 'next/link'
@@ -34,6 +35,34 @@ function unpkg(str, name, version) {
 }
 function cutWindow(str) {
   return str.split('.')[1]
+}
+// remove empty array and empty attrbutuion
+function reduction(pObj) {
+  let obj = cloneDeep(pObj)
+
+  function reduct(obj) {
+    Object.keys(obj).forEach(k => {
+      if(!!obj[k]) {
+        if(typeof obj[k] === 'string') {
+          return
+        }
+        if(Array.isArray(obj[k])) {
+          if(obj[k].length) {
+            obj[k].forEach(o => reduct(o))
+          } else {
+            delete obj[k]
+          }
+        } else {
+          return reduct(obj[k])
+        }
+      } else {
+        // '', undefined, null
+        delete obj[k]
+      }
+    })
+  }
+  reduct(obj)
+  return obj
 }
 
 function BlurInput({ value, onChange = noop }) {
@@ -540,7 +569,7 @@ export default withRouter(({ router }) => {
       })
       .then(depSource => {
         const parentId = 'testList'
-        const className = 'test-window'
+        const className = 'test-window' 
         const parent = document.getElementById(parentId)
         // clear previous iframe
         while (parent.firstChild) {
@@ -562,7 +591,7 @@ export default withRouter(({ router }) => {
   }
 
   function onSave() {
-    console.log('save', getSolutionWithoutKey())
+    console.log('save', getSolutionWithoutKey(), reduction(getSolutionWithoutKey()))
   }
 
   function onFilter(value) {
