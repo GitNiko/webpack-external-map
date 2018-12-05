@@ -56,10 +56,17 @@ export const getPackageMetaList = (type = 'file') => (...args) => {
     return list.filter(e => e.type === type)
   })
 }
-export const commit = mapping => {
+export const commit = (name, range, solution) => {
   // return ajax('/api/mapping', {
   //   body: JSON.stringify(mapping),
   //   method: 'POST',
   // })
-  return ajax('/api/mapping', null, mapping, 'POST', null, 20000)
+  return ajax(
+    `/api/mapping/${name}/${range}`,
+    null,
+    solution,
+    'POST',
+    null,
+    20000,
+  )
 }

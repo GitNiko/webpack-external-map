@@ -19,7 +19,7 @@ class Workspace {
     }
     if (!fs.existsSync(workspaceDir)) {
       // makdir and clone
-      fs.mkdir(workspaceDir)
+      fs.mkdirSync(workspaceDir)
       this.repo = await Git.Clone(url, workspaceDir)
     } else {
       // exist and fetch

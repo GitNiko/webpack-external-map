@@ -9,6 +9,7 @@ import {
   getPackageInfo,
   getExternMapJson,
   getPackageMetaList,
+  commit
 } from '../api/request'
 
 import './editor.less'
@@ -591,7 +592,12 @@ export default withRouter(({ router }) => {
   }
 
   function onSave() {
-    console.log('save', getSolutionWithoutKey(), reduction(getSolutionWithoutKey()))
+    const mapping = {
+      ...getSolutionWithoutKey(),
+      peerDependencies: depens,
+    }
+    console.log('save', getSolutionWithoutKey(), reduction(mapping))
+    commit(name, range, mapping)
   }
 
   function onFilter(value) {
