@@ -93,11 +93,6 @@ function SourceCard({
   onDelete,
   onSolutionNameChange = noop,
 }) {
-  const [name, setName] = useState(solutionName)
-  function onNameChange(ev) {
-    setName(ev.target.value)
-    // onSolutionNameChange(ev.target.value, theKey)
-  }
   function onClick(ev) {
     onDelete(droppableId)
   }
@@ -106,8 +101,8 @@ function SourceCard({
     <div className="source-card">
       <div className="peer">
         <BlurInput
-          value={name}
-          onChange={() => onSolutionNameChange(droppableId, name)}
+          value={solutionName}
+          onChange={(v) => onSolutionNameChange(droppableId, v)}
         />
         <div className="peer-delete">
           <Icon type="delete" onClick={onClick} />
@@ -598,10 +593,11 @@ export default withRouter(({ router }) => {
   }
 
   function onSave() {
-    const mapping = {
+    let mapping = {
       ...getSolutionWithoutKey(),
       peerDependencies: depens,
     }
+    mapping = reduction(mapping);
     console.log('save', getSolutionWithoutKey(), reduction(mapping))
     commit(name, range, mapping)
   }
