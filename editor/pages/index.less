@@ -1,7 +1,72 @@
-.content {
-  margin-left: 50px;
+.container {
+  max-width: 1344px;
+  width: 1344px;
+  padding: 3rem 1.5rem;
 
-  .package-name {
-    font-size: 20px;
+  .card {
+    width: 250px;
   }
+
+  .header {
+    display: flex;
+    margin-bottom: .5rem;
+    font-size: 2em;
+
+    .add-icon {
+      font-size: 0.7em;
+      align-items: center;
+      display: flex;
+      margin-left: 0.5em;
+      color: #40a9ff;
+    }
+  }
+
+  .file {
+    border: 1px solid;
+    min-height: 32px;
+  }
+  .source-card {
+    margin-bottom: 0.5em;
+  }
+  .test-group {
+    display: flex;
+    flex-direction: column;
+    .test-window {
+      height: 120px;
+      border: #40a9ff solid 1px;
+      margin-bottom: 0.5em;
+    }
+  }
+
+  .content {
+    .package-name {
+      font-size: 20px;
+    }
+  }
+
+  .peer {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 0.5em;
+    .peer-delete {
+      font-size: 1.5em;
+      margin-left: 0.5em;
+    }
+  }
+
+  .test-operation {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5em;
+  }
+}
+.v-scroll {
+  overflow-y: scroll;
+  max-height: 80vh;
+  position: relative;
+}
+
+.colum {
+  display: flex;
+  justify-content: space-around;
 }

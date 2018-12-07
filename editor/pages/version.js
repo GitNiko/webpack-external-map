@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { withRouter } from 'next/router'
 import Link from 'next/link'
+import { Tag, Icon } from 'antd'
+import 'antd/dist/antd.css'
 import {getExternMapJson} from '../api/request'
 
 export default withRouter(({ router }) => {
@@ -15,13 +17,18 @@ export default withRouter(({ router }) => {
   }, [])
   const Versions = Object.keys(versions).map((k, i) => {
     return (
-      <div key={i}><Link href={{ pathname: '/editor', query: { range: k, name: name } }}><a>{ k }</a></Link></div>
+      <div key={i}><Link href={{ pathname: '/editor', query: { range: k, name: name } }}><Tag color="blue">{ k }</Tag></Link></div>
     )
   })
   return (
-    <div>
+    <div className="container">
+      <div className="header">
+      <label>{name}</label>
+      <div className="add-icon"><Link href={{ pathname: '/editor', query: { name: name,range: '>=0.0.0' } }}><Icon type="plus-circle" /></Link></div>
+      </div>
+      <div className="content">
       <div>{Versions}</div>
-      <div><Link href={{ pathname: '/editor', query: { name: name,range: '>=0.0.0' } }}><a>没有你想要的？来添加一个吧</a></Link></div>
+      </div>
     </div>
   )
 })

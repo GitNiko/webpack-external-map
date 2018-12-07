@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { Form, Select, Input, Icon, Button } from 'antd'
 import cloneDeep from 'lodash/cloneDeep'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import { withRouter } from 'next/router'
@@ -9,12 +10,13 @@ import {
   getPackageInfo,
   getExternMapJson,
   getPackageMetaList,
-  commit
+  commit,
 } from '../api/request'
 
-import './editor.less'
-import Test from './test'
-import { resolve } from 'any-promise'
+import './index.less'
+import 'antd/dist/antd.css'
+
+const FormItem = Form.Item
 
 function noop() {}
 
@@ -43,12 +45,12 @@ function reduction(pObj) {
 
   function reduct(obj) {
     Object.keys(obj).forEach(k => {
-      if(!!obj[k]) {
-        if(typeof obj[k] === 'string') {
+      if (!!obj[k]) {
+        if (typeof obj[k] === 'string') {
           return
         }
-        if(Array.isArray(obj[k])) {
-          if(obj[k].length) {
+        if (Array.isArray(obj[k])) {
+          if (obj[k].length) {
             obj[k].forEach(o => reduct(o))
           } else {
             delete obj[k]
@@ -76,7 +78,7 @@ function BlurInput({ value, onChange = noop }) {
     [value],
   )
   return (
-    <input
+    <Input
       onChange={ev => setState(ev.target.value)}
       value={state}
       onBlur={() => onChange(state)}
@@ -101,15 +103,15 @@ function SourceCard({
   }
 
   return (
-    <div>
-      <div>
-        <label>Solution Name:</label>
-        <input
+    <div className="source-card">
+      <div className="peer">
+        <BlurInput
           value={name}
-          onChange={onNameChange}
-          onBlur={() => onSolutionNameChange(droppableId, name)}
+          onChange={() => onSolutionNameChange(droppableId, name)}
         />
-        <button onClick={onClick}>Delete</button>
+        <div className="peer-delete">
+          <Icon type="delete" onClick={onClick} />
+        </div>
       </div>
       <Droppable droppableId={droppableId}>
         {(provided, snapshot) => (
@@ -154,10 +156,18 @@ function Leaf({
   onAttrKeyChange = noop,
 }) {
   return (
-    <div>
-      <BlurInput value={tKey} onChange={v => onAttrKeyChange(tKey, v)} /> :
-      <BlurInput value={value} onChange={v => onAttrValChange(tKey, v)} />
-      <button onClick={() => onRemove(tKey)}>Delete</button>
+    <div className="peer">
+      <div>
+        <BlurInput value={tKey} onChange={v => onAttrKeyChange(tKey, v)} />
+      </div>{' '}
+      :
+      <div>
+        <BlurInput value={value} onChange={v => onAttrValChange(tKey, v)} />
+      </div>
+      <div className="peer-delete">
+        <Icon type="delete" onClick={() => onRemove(tKey)} />
+      </div>
+      {/* <Button onClick={() => onRemove(tKey)}>Delete</Button> */}
     </div>
   )
 }
@@ -385,6 +395,9 @@ export default withRouter(({ router }) => {
         getExternMapJson().then(extnMap => {
           if (extnMap[name] && extnMap[name][range]) {
             setSolution(extnMap[name][range])
+            if (extnMap[name][range].peerDependencies) {
+              depensInterface.setState(extnMap[name][range].peerDependencies)
+            }
           }
         })
       }
@@ -407,13 +420,6 @@ export default withRouter(({ router }) => {
           setDisplaySouce(source)
           return setSource(source)
         })
-        // 获取版本的package中的dep信息
-        // 去externmapjson中寻找对应的信息，只找生产环境的版本，如果没有，则提示先去配置一个对应的基本库信息
-        getPackageInfo(name, selectedVersion).then(info => {
-          if (info.peerDependencies) {
-            depensInterface.setState(info.peerDependencies)
-          }
-        })
       } else {
         // clear
         setSource([])
@@ -424,8 +430,8 @@ export default withRouter(({ router }) => {
   )
 
   // on version selected
-  function onSelect(e) {
-    setSelectedVersion(e.target.value)
+  function onSelect(v) {
+    setSelectedVersion(v)
   }
 
   const VersionOptions = versions.map((v, i) => {
@@ -570,7 +576,7 @@ export default withRouter(({ router }) => {
       })
       .then(depSource => {
         const parentId = 'testList'
-        const className = 'test-window' 
+        const className = 'test-window'
         const parent = document.getElementById(parentId)
         // clear previous iframe
         while (parent.firstChild) {
@@ -601,7 +607,7 @@ export default withRouter(({ router }) => {
   }
 
   function onFilter(value) {
-    if(!!value) {
+    if (!!value) {
       const newDisplaySource = source.filter(s => s.indexOf(value) !== -1)
       setDisplaySouce(newDisplaySource)
     }
@@ -620,82 +626,94 @@ export default withRouter(({ router }) => {
     )
   })
   return (
-    <div className="container">
+    <div className="container colum">
       <DragDropContext
         onDragStart={onDragStart}
         onDragUpdate={onDragUpdate}
         onDragEnd={onDragEnd}
       >
-        <div className="source">
+        <div className="card">
           <h3>包内容窗口</h3>
-          <select defaultValue={selectedVersion} onChange={onSelect}>
-            {VersionOptions}
-          </select>
-          <div>
-            过滤: <BlurInput onChange={onFilter} />
-          </div>
-          <Droppable droppableId="source">
-            {(provided, snapshot) => (
-              <div
-                ref={provided.innerRef}
-                style={getListStyle(snapshot.isDraggingOver)}
-              >
-                {displaySource.map((item, index) => (
-                  <Draggable
-                    key={item}
-                    draggableId={encode('source', item)}
-                    index={index}
+          <Form layout="vertical">
+            <FormItem label="Version">
+              <Select value={selectedVersion} onChange={onSelect}>
+                {VersionOptions}
+              </Select>
+            </FormItem>
+            <FormItem label="Fitler">
+              <BlurInput onChange={onFilter} />
+            </FormItem>
+            <FormItem label="Files">
+              <Droppable droppableId="source">
+                {(provided, snapshot) => (
+                  <div
+                    className="v-scroll"
+                    ref={provided.innerRef}
+                    style={getListStyle(snapshot.isDraggingOver)}
                   >
-                    {(provided, snapshot) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        style={getItemStyle(
-                          snapshot.isDragging,
-                          provided.draggableProps.style,
-                        )}
+                    {displaySource.map((item, index) => (
+                      <Draggable
+                        key={item}
+                        draggableId={encode('source', item)}
+                        index={index}
                       >
-                        {item}
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            style={getItemStyle(
+                              snapshot.isDragging,
+                              provided.draggableProps.style,
+                            )}
+                          >
+                            {item}
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </FormItem>
+          </Form>
         </div>
-        <div>
+        <div className="card">
           <h3>资源窗口</h3>
-          <div>
-            <label>Version Range:</label>
-            <BlurInput value={range} onChange={x => setRange(x)} />
-          </div>
-          <div>
-            <label>root:</label>
-            <BlurInput value={solution.root} onChange={x => setRoot(x)} />
-          </div>
-          <div>
-            <h4>peerDependencies</h4>
-            {PeerDepdens}
-            <button onClick={() => depensInterface.add('key', 'value')}>
-              Add
-            </button>
-          </div>
-          <h4>Javascript</h4>
-          {JSSolutions}
-          <button onClick={onAddSolution('js')}>Add</button>
-          <h4>Css</h4>
-          {CSSSolutions}
-          <button onClick={onAddSolution('css')}>Add</button>
+          <Form layout="vertical">
+            <FormItem label="Version Range">
+              <BlurInput value={range} onChange={x => setRange(x)} />
+            </FormItem>
+            <FormItem label="Root">
+              <BlurInput value={solution.root} onChange={x => setRoot(x)} />
+            </FormItem>
+            <FormItem label="Peer Dependencies">
+              {PeerDepdens}
+              <Button block onClick={() => depensInterface.add('key', 'value')}>
+                Add
+              </Button>
+            </FormItem>
+            <FormItem label="Javascript">
+              {JSSolutions}
+              <Button onClick={onAddSolution('js')} block>
+                Add
+              </Button>
+            </FormItem>
+            <FormItem label="CSS">
+              {CSSSolutions}
+              <Button onClick={onAddSolution('css')} block>
+                Add
+              </Button>
+            </FormItem>
+          </Form>
         </div>
       </DragDropContext>
-      <div>
+      <div className="card">
         <h3>测试窗口</h3>
-        <div>
-          <button onClick={onRunTest}>Test</button>
-          <button onClick={onSave}>Save</button>
+        <div className="test-operation">
+          <Button onClick={onRunTest}>Test</Button>
+          <Button onClick={onSave}>Save</Button>
         </div>
         <div id="testList" className="test-group" />
       </div>

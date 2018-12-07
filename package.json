@@ -64,7 +64,7 @@
     "@zeit/next-less": "^1.0.1",
     "less": "^3.8.1",
     "react": "^16.7.0-alpha.0",
-    "react-beautiful-dnd": "^10.0.1",
+    "react-beautiful-dnd": "^10.0.2",
     "react-dom": "^16.7.0-alpha.0"
   }
 }
