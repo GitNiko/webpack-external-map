@@ -1,8 +1,11 @@
-import { gt, lt } from 'semver'
-export function subset(r1, r2, loose) {
+import { gt, lt, eq } from 'semver'
+export function subset(subRange, superRange, loose) {
   const OPEN = 0
   const CLOSE = 1
-  const INF = 'infinite'
+  // +∞ ASCII 047
+  const POS_INF = ':'
+  // −∞ ASCII 058
+  const NEG_INF = '/'
 
   // from comparators to interval
   function genInterval(comparators) {
@@ -22,8 +25,14 @@ export function subset(r1, r2, loose) {
       if (leftValue.operator === '') {
         // just a point
         rightValue = leftValue
+      } else if (leftValue.operator === undefined) {
+        // any
+        left = OPEN
+        right = OPEN
+        leftValue = NEG_INF
+        rightValue = POS_INF
       } else if (leftValue.operator.indexOf('>') !== -1) {
-        rightValue = INF
+        rightValue = POS_INF
         right = OPEN
         if (leftValue.operator.indexOf('=') !== -1) {
           // [v, +∞)
@@ -34,7 +43,7 @@ export function subset(r1, r2, loose) {
         }
       } else {
         rightValue = leftValue
-        leftValue = INF
+        leftValue = NEG_INF
         left = OPEN
         if (rightValue.operator.indexOf('=') !== -1) {
           // (−∞, v]
@@ -54,24 +63,39 @@ export function subset(r1, r2, loose) {
   }
 
   function orderEq(v1, v2) {
-    return (
-      (v1 === INF && v2 === INF) ||
-      (v1 !== INF && v2 !== INF && v1.semver.version === v2.semver.version)
-    )
+    if (v1.semver) {
+      if (v2.semver) {
+        return eq(v1.semver.version, v2.semver.version)
+      } else {
+        return false
+      }
+    } else {
+      if (v2.semver) {
+        return false
+      } else {
+        return v1 === v2
+      }
+    }
   }
 
   function orderGt(v1, v2) {
-    return (
-      (v1 === INF && v2 !== INF) ||
-      (v1 !== INF && v2 !== INF && gt(v1.semver.version, v2.semver.version))
-    )
+    if (v1.semver) {
+      if (v2.semver) {
+        return gt(v1.semver.version, v2.semver.version)
+      } else {
+        return v1.semver.version > v2
+      }
+    } else {
+      if (v2.semver) {
+        return v1 > v2.semver.version
+      } else {
+        return v1 > v2
+      }
+    }
   }
 
   function orderLt(v1, v2) {
-    return (
-      (v1 !== INF && v2 === INF) ||
-      (v1 !== INF && v2 !== INF && lt(v1.semver.version, v2.semver.version))
-    )
+    return !orderEq(v1, v2) && !orderGt(v1, v2)
   }
 
   function isSubset(interval1, interval2) {
@@ -111,12 +135,12 @@ export function subset(r1, r2, loose) {
   }
 
   // (−∞, +∞) denotes the set of all ordinary real numbers, not the extended reals
-  for (let i = 0; i < r1.set.length; i++) {
-    const r1Interval = genInterval(r1.set[i])
+  for (let i = 0; i < subRange.set.length; i++) {
+    const subInterval = genInterval(subRange.set[i])
     let exist = false
-    for (let j = 0; j < r2.set.length; j++) {
-      const r2Interval = genInterval(r2.set[j])
-      if (isSubset(r1Interval, r2Interval)) {
+    for (let j = 0; j < superRange.set.length; j++) {
+      const superInterval = genInterval(superRange.set[j])
+      if (isSubset(subInterval, superInterval)) {
         exist = true
         break
       }
@@ -127,3 +151,4 @@ export function subset(r1, r2, loose) {
   }
   return true
 }
+
