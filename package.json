@@ -1,6 +1,6 @@
 {
-  "name": "webpack-external-map",
-  "version": "0.5.0",
+  "name": "@shein/webpack-external-map",
+  "version": "0.5.1",
   "description": "a map of external configure",
   "main": "src/index.js",
   "scripts": {
