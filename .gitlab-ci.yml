@@ -1,0 +1,74 @@
+image: node:10-alpine
+
+# variables:
+#   GRADLE_USER_HOME: ./example/android/.gradle
+#   ARTIFACTS_URL: ./example/android/app/build/outputs/apk/app-release.apk
+
+before_script:
+  - echo 'before script'
+
+stages:
+  - test
+  # - build
+  # - publish
+  # - notify
+test:
+  script:
+    - echo 'hello'
+# test:
+#   script:
+#     - yarn config list
+#     - yarn
+#     - yarn test
+#   only:
+#     - develop
+#     - release
+#     - test
+#   cache:
+#     key: ${CI_BUILD_REF_NAME}
+#     untracked: true
+#     paths:
+#       - node_modules/
+
+# buid_android:
+#   stage: build
+#   script:
+#     - yarn
+#     - gradle -v
+#     - cd example && yarn
+#     - cd android && ./gradlew assembleRelease
+#     - cd ../../ && mkdir build && mv example/android/app/build/outputs/apk/app-release-unsigned.apk build/app-release.apk
+#   artifacts:
+#     paths:
+#     - build/app-release.apk
+#     expire_in: 1 day
+#   cache:
+#     key: ${CI_BUILD_REF_NAME}
+#     untracked: true
+#     paths:
+#       - node_modules/
+#       - example/node_modules/
+#       - example/android/.gradle/wrapper
+#       - example/android/.gradle/caches
+#       - .yarn
+#   only:
+#     - develop
+#     - test
+
+# publish_to_cnpm:
+#   stage: publish
+#   script:
+#     - npm publish 
+#   only:
+#     - release
+
+# dingding:
+#   stage: notify
+#   script:
+#     - version=`cat package.json | grep version | sed 's/[\", ]//g'`
+#     - message=`printf "Necromancer 发布了新版本:\n%s" ${version}`
+#     - echo $message
+#     - |
+#         curl -X POST   'https://oapi.dingtalk.com/robot/send?access_token=3092c4888ff350cb5aa7288746f355679156ce69d9c37c5c45cd14ac17cd925'   -H 'cache-control: no-cache'   -H 'content-type: application/json'  -d "{\"msgtype\": \"text\", \"text\": {\"content\": \"${message}\"}}"
+#   only:
+#     - release
