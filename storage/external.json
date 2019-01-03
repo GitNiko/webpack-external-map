@@ -41,7 +41,6 @@
                     "min/moment-with-locales.js"
                 ]
             },
-            "css": {},
             "root": "window.moment"
         }
     },
