@@ -118,9 +118,7 @@
                     "prop-types.min.js"
                 ]
             },
-            "css": {},
-            "root": "window.PropTypes",
-            "peerDependencies": {}
+            "root": "window.PropTypes"
         }
     }
 }
