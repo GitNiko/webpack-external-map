@@ -120,5 +120,18 @@
             },
             "root": "window.PropTypes"
         }
+    },
+    "jquery": {
+        ">=3.0.0": {
+            "js": {
+                "development": [
+                    "dist/jquery.js"
+                ],
+                "deployment": [
+                    "dist/jquery.min.js"
+                ]
+            },
+            "root": "window.jQuery"
+        }
     }
 }
