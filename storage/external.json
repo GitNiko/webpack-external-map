@@ -146,5 +146,21 @@
             },
             "root": "window._"
         }
+    },
+    "moment-timezone": {
+        ">=0.5.20": {
+            "js": {
+                "development": [
+                    "builds/moment-timezone-with-data.js"
+                ],
+                "deployment": [
+                    "builds/moment-timezone-with-data.min.js"
+                ]
+            },
+            "root": "window.moment",
+            "peerDependencies": {
+                "moment": ">=2.8.0"
+            }
+        }
     }
 }
