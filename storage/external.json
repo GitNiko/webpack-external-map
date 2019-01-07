@@ -162,5 +162,31 @@
                 "moment": ">=2.8.0"
             }
         }
+    },
+    "react-quill": {
+        ">=1.3.0": {
+            "js": {
+                "development": [
+                    "dist/react-quill.js"
+                ],
+                "deployment": [
+                    "dist/react-quill.min.js"
+                ]
+            },
+            "css": {
+                "development": [
+                    "dist/quill.snow.css"
+                ],
+                "deployment": [
+                    "dist/quill.snow.css"
+                ]
+            },
+            "root": "window.ReactQuill",
+            "peerDependencies": {
+                "react": ">=16.0.0",
+                "react-dom": ">=16.0.0",
+                "prop-types": ">=15.5.2"
+            }
+        }
     }
 }
