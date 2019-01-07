@@ -133,5 +133,18 @@
             },
             "root": "window.jQuery"
         }
+    },
+    "lodash": {
+        ">=4.17.0": {
+            "js": {
+                "development": [
+                    "lodash.js"
+                ],
+                "deployment": [
+                    "lodash.min.js"
+                ]
+            },
+            "root": "window._"
+        }
     }
 }
