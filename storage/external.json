@@ -23,6 +23,20 @@
                     "umd/react-dom.production.min.js"
                 ]
             }
+        },
+        ">=16.1.0": {
+            "js": {
+                "development": [
+                    "umd/react-dom.development.js"
+                ],
+                "deployment": [
+                    "umd/react-dom.production.min.js"
+                ]
+            },
+            "root": "window.ReactDOM",
+            "peerDependencies": {
+                "react": ">=16.0.0"
+            }
         }
     },
     "moment": {
