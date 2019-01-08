@@ -14,7 +14,6 @@
     },
     "react-dom": {
         ">=16.0.0": {
-            "root": "root",
             "js": {
                 "development": [
                     "umd/react-dom.development.js"
@@ -22,6 +21,10 @@
                 "deployment": [
                     "umd/react-dom.production.min.js"
                 ]
+            },
+            "root": "window.ReactDOM",
+            "peerDependencies": {
+                "react": ">=16.0.0"
             }
         },
         ">=16.1.0": {
